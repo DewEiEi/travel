@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>เข้าสู่ระบบ | เที่ยวบ้านเรา</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+ <body>
+    <header>
+        <p class="site-name">เที่ยวบ้านเรา</p>
+            <nav aria-label="เมนูหลัก">
+                <ul>
+                    <li><a href="index.html">หน้าแรก</a></li>
+                    <li><a href="places.html">ที่เที่ยว</a></li>
+                    <li><a href="food.html">อาหาร</a></li>
+                    <li><a href="plan.html">วางแผนเที่ยว</a></li>
+                    <li><a href="travel.html">ข้อมูลการเดินทาง</a></li>
+                    <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                </ul>
+            </nav>
+    </header>
+    <main>
+        <!-- หน้า Login -->
+        <section class="card login-card" id="loginView">
+            <h1>เข้าสู่ระบบ</h1>
+            <p class="login-sub">กรุณากรอกชื่อผู้ใช้และรหัสผ่าน</p>
+
+            <form id="loginForm" autocomplete="off">
+                <label for="username">ชื่อผู้ใช้</label>
+                <input type="text" id="username" placeholder="ชื่อผู้ใช้" required>
+
+                <label for="password">รหัสผ่าน</label>
+                <input type="password" id="password" placeholder="รหัสผ่าน" required>
+
+                <div class="login-row">
+                    <input type="checkbox" id="showPw">
+                    <label for="showPw">แสดงรหัสผ่าน</label>
+                </div>
+
+                <button type="submit">เข้าสู่ระบบ</button>
+                <div class="login-msg" id="msg"></div>
+            </form>
+
+            <div class="login-demo">
+                <b>บัญชีทดลอง</b>
+                <table>
+                    <tr><th>ชื่อผู้ใช้</th><th>รหัสผ่าน</th><th>สิทธิ์</th></tr>
+                    <tbody id="demoList"></tbody>
+                </table>
+                <div class="login-hint">คลิกที่แถวเพื่อกรอกอัตโนมัติ</div>
+            </div>
+        </section>
+
+        <!-- หน้าหลังเข้าสู่ระบบ -->
+        <section class="card login-card login-welcome" id="homeView" hidden>
+            <div class="login-avatar" id="avatar"></div>
+            <h1>ยินดีต้อนรับ</h1>
+            <p class="login-sub" id="welcomeName"></p>
+            <span class="login-role" id="welcomeRole"></span>
+            <a class="button" href="index.html">ไปหน้าแรก</a>
+            <button class="login-logout" id="logoutBtn">ออกจากระบบ</button>
+        </section>
+    </main>
+    <footer>
+        <p><strong>033 เศรษฐการ </strong>ใบงานฝึกปฏิบัติวิชาการสร้างเว็บไซต์ทางธุรกิจ</p>
+    </footer>
+
+<script>
+  // บัญชีทดลอง (ไม่มี database เก็บไว้ในไฟล์นี้)
+  const accounts = [
+    { username: "admin", password: "admin123", name: "ผู้ดูแลระบบ", role: "Admin" },
+    { username: "user",  password: "user123",  name: "ผู้ใช้ทั่วไป",  role: "User"  },
+    { username: "demo",  password: "demo1234", name: "บัญชีทดลอง",  role: "Guest" }
+  ];
+
+  const loginView = document.getElementById("loginView");
+  const homeView  = document.getElementById("homeView");
+  const form      = document.getElementById("loginForm");
+  const userInput = document.getElementById("username");
+  const passInput = document.getElementById("password");
+  const msg       = document.getElementById("msg");
+
+  // แสดงรายการบัญชีทดลอง
+  const demoList = document.getElementById("demoList");
+  accounts.forEach(acc => {
+    const tr = document.createElement("tr");
+    tr.className = "acc";
+    tr.innerHTML = `<td><code>${acc.username}</code></td><td><code>${acc.password}</code></td><td>${acc.role}</td>`;
+    tr.addEventListener("click", () => {
+      userInput.value = acc.username;
+      passInput.value = acc.password;
+      msg.textContent = "";
+    });
+    demoList.appendChild(tr);
+  });
+
+  document.getElementById("showPw").addEventListener("change", e => {
+    passInput.type = e.target.checked ? "text" : "password";
+  });
+
+  function showHome(acc) {
+    document.getElementById("avatar").textContent = acc.username.charAt(0).toUpperCase();
+    document.getElementById("welcomeName").textContent = `${acc.name} (${acc.username})`;
+    document.getElementById("welcomeRole").textContent = "สิทธิ์: " + acc.role;
+    loginView.hidden = true;
+    homeView.hidden = false;
+  }
+
+  function showLogin() {
+    form.reset();
+    passInput.type = "password";
+    msg.textContent = "";
+    homeView.hidden = true;
+    loginView.hidden = false;
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const u = userInput.value.trim();
+    const p = passInput.value;
+    const acc = accounts.find(a => a.username === u && a.password === p);
+
+    if (acc) {
+      try { sessionStorage.setItem("loggedInUser", acc.username); } catch (_) {}
+      showHome(acc);
+    } else {
+      msg.className = "login-msg error";
+      msg.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    try { sessionStorage.removeItem("loggedInUser"); } catch (_) {}
+    showLogin();
+  });
+
+  // จำสถานะล็อกอินไว้ระหว่างเปลี่ยนหน้า/รีเฟรช (ภายในแท็บเดียวกัน)
+  try {
+    const saved = sessionStorage.getItem("loggedInUser");
+    const acc = accounts.find(a => a.username === saved);
+    if (acc) showHome(acc);
+  } catch (_) {}
+</script>
+</body>
+</html>
